@@ -12,5 +12,11 @@ This project implements an image inpainting application using a pretrained neura
 
 1. Clone the repository:
    ```bash
-   git clone <repository_url>
+   git clone https://github.com/spkwap/image_inpainting.git
    cd image_inpainting
+
+2. Save file places2.pth from this link: https://drive.google.com/file/d/10iXhPEiOiNzTbM-Yc1GRy2-D9Xjmd1cI/view in data folder
+
+3. To start an app
+   ```bash
+   python src/app.py
