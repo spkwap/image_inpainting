@@ -16,11 +16,11 @@
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(135deg, #f2f2f2, #d6eaf8);
             display: flex;
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
-            min-height: 100vh; /* Ensure full viewport height */
-            overflow-y: scroll; /* Allow scrolling */
-            padding-bottom: 50px; /* Add space at the bottom to make sure scroll is accessible */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-y: scroll;
+            padding-bottom: 50px;
         }
 
         .container {
@@ -114,7 +114,7 @@
         }
 
         canvas:hover {
-            /* No transform here */
+
         }
 
         .buttons {
@@ -214,7 +214,7 @@
         let isDrawing = false;
         let image = new Image();
 
-        // Load image into canvas
+
         imageInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -228,7 +228,7 @@
             reader.readAsDataURL(file);
         });
 
-        // Drawing on canvas
+
         canvas.addEventListener('mousedown', () => { isDrawing = true; });
         canvas.addEventListener('mouseup', () => { isDrawing = false; });
         canvas.addEventListener('mousemove', (e) => {
@@ -243,13 +243,13 @@
             }
         });
 
-        // Clear canvas
+
         clearBtn.addEventListener('click', () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(image, 0, 0, 512, 512);
         });
 
-        // Submit functionality
+
         submitBtn.addEventListener('click', async function() {
             const maskData = canvas.toDataURL('image/png');
             const maskBlob = await fetch(maskData).then(res => res.blob());
@@ -270,10 +270,8 @@
                 img.src = resultURL;
                 resultsContainer.appendChild(img);
 
-                // Automatically scroll to the latest image
                 img.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
-                // Add the download button
                 const downloadBtn = document.createElement('button');
                 downloadBtn.textContent = 'Download Image';
                 downloadBtn.classList.add('download-btn');
