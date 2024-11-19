@@ -20,4 +20,3 @@ This project implements an image inpainting application using a pretrained neura
 3. To start an app
    ```bash
    python src/app.py
-    
