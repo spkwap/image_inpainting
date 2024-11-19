@@ -18,5 +18,6 @@ This project implements an image inpainting application using a pretrained neura
 2. Save file places2.pth from this link: https://drive.google.com/file/d/10iXhPEiOiNzTbM-Yc1GRy2-D9Xjmd1cI/view in data folder
 
 3. To start an app
-   '''bash
-    python src/app.py
+   ```bash
+   python src/app.py
+    
