@@ -12,5 +12,5 @@ This project implements an image inpainting application using a pretrained neura
 
 1. Clone the repository:
    ```bash
-   git clone [<(https://github.com/spkwap/image_inpainting.git)>]
+   git clone https://github.com/spkwap/image_inpainting.git
    cd image_inpainting
