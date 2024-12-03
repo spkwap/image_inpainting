@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_login.css') }}">
+{% endblock %}
+
+{% block content %}
+<header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+<h1>Your Gallery</h1>
+<div class="gallery">
+    {% for image in images %}
+        <div class="image">
+            <h3>{{ image.filename }}</h3>
+            <img src="data:image/jpeg;base64,{{ image.data|b64encode }}" alt="result image">
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

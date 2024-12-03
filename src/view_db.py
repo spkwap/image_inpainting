@@ -11,10 +11,22 @@ cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 tables = cursor.fetchall()
 print("Tabele w bazie danych:", tables)
 
-# Jeśli chcesz zobaczyć dane w konkretnej tabeli, np. 'user':
+# Jeśli chcesz zobaczyć dane w konkretnej tabeli, np. 'User':
 try:
     table_name = 'User'  # Zmień na nazwę tabeli, którą chcesz wyświetlić
     cursor.execute(f"SELECT * FROM {table_name}")
+    rows = cursor.fetchall()
+    print(f"\nZawartość tabeli {table_name}:")
+    for row in rows:
+        print(row)
+except sqlite3.Error as e:
+    print(f"Błąd podczas odczytu tabeli: {e}")
+
+# Jeśli chcesz zobaczyć dane w tabeli 'Image' (zdjęcia):
+try:
+    table_name = 'Image'  # Zmieniamy na tabelę 'Image'
+    cursor.execute(f"SELECT * FROM {table_name}")
+    cursor.execute(f"PRAGMA table_info({table_name});")
     rows = cursor.fetchall()
     print(f"\nZawartość tabeli {table_name}:")
     for row in rows:

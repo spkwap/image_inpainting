@@ -1,11 +1,11 @@
-from app import app, db  # Import aplikacji i obiektu db
-from models import User  # Import modelu User
+from app import app, db
+from models import User#, Image
 
 with app.app_context():
     db.create_all()  # Tworzy wszystkie tabele na podstawie modeli
     print("Baza danych i tabele zostały utworzone.")
 
-    # Dodanie testowych użytkowników (opcjonalnie)
+    # Dodanie testowych użytkowników
     admin = User(username='admin', email='admin@example.com')
     admin.set_password('adminpassword')
 

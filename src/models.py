@@ -1,24 +1,26 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
-# db jest już zainicjalizowane w app.py, więc tutaj go używamy
-db = SQLAlchemy()  # To musi być importowane z głównej aplikacji w momencie inicjalizacji
+db = SQLAlchemy()
 
-# Model użytkownika
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)  # Id użytkownika
-    username = db.Column(db.String(150), unique=True, nullable=False)  # Nazwa użytkownika
-    email = db.Column(db.String(120), unique=True, nullable=False)  # Adres e-mail
-    password = db.Column(db.String(150), nullable=False)  # Hasło użytkownika
+class User(db.Model, UserMixin):  # Dodanie UserMixin
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+    #images = db.relationship('Image', back_populates='user', lazy=True)  # Relacja do obrazów
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
 
-    # Ustawianie hasła (wygenerowanie hash'a)
     def set_password(self, password):
+        """Generuje hash hasła."""
         self.password = generate_password_hash(password)
 
-    # Sprawdzanie hasła (porównanie z zapisanym hash'em)
     def check_password(self, password):
+        """Sprawdza poprawność hasła."""
         return check_password_hash(self.password, password)
+
+

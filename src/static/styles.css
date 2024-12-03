@@ -1,0 +1,90 @@
+/* Resetowanie marginesów i wypełnień */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Ustawienie tła strony i ogólnych właściwości */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f7f6;
+    color: #fff;
+    line-height: 1.6;
+}
+
+/* Pasek nawigacyjny */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #222; /* Ciemny czarny kolor */
+    padding: 15px 0;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Cień dla efektu głębi */
+    animation: slideIn 1s ease-out;
+}
+
+/* Stylizacja listy nawigacyjnej */
+.navbar {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+
+/* Stylizacja elementów nawigacyjnych */
+.navbar li {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Linki w nawigacji */
+.navbar a {
+    color: #fff; /* Białe linki na ciemnym tle */
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+/* Efekt przycisku po najechaniu */
+.navbar a:hover {
+    color: #ffcc00; /* Złoty kolor podczas najechania */
+    transform: translateY(-3px); /* Lekki efekt podnoszenia */
+}
+
+/* Animacja dla paska nawigacyjnego */
+@keyframes slideIn {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Stylizacja sekcji głównej */
+main {
+    padding-top: 80px; /* Dodajemy przestrzeń na pasek nawigacyjny */
+    text-align: center;
+}
+
+/* Stylizacja nagłówka strony */
+h1 {
+    color: #222; /* Ciemny kolor nagłówka */
+    font-size: 48px;
+    margin-bottom: 20px;
+    animation: fadeIn 2s ease-in-out;
+}
+
+/* Animacja wygasania nagłówka */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}

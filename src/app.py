@@ -7,7 +7,18 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config  # Import konfiguracji
 from forms import RegistrationForm, LoginForm  # Import formularzy
-from models import db, User  # Zakładając, że masz model User i db w osobnym pliku 'models.py'
+from models import db, User#, Image  # Zakładając, że masz model User i db w osobnym pliku 'models.py'
+from flask import request
+from app import db
+#from models import Image
+from werkzeug.utils import secure_filename
+from flask import send_file
+from io import BytesIO
+from PIL import Image as PILImage
+import base64
+from werkzeug.utils import secure_filename
+from datetime import datetime
+
 
 # Inicjalizacja aplikacji
 app = Flask(__name__)
@@ -29,10 +40,14 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-# Główna trasa, która przekierowuje do rejestracji
 @app.route('/')
 def index():
-    return redirect(url_for('register'))  # Teraz przekierowuje na stronę rejestracji
+    return redirect(url_for('home')) if current_user.is_authenticated else redirect(url_for('login'))
+
+@app.route('/home')
+@login_required
+def home():
+    return render_template('upload.html', username=current_user.username)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -43,32 +58,22 @@ def register():
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(user)
         db.session.commit()
-        return redirect(url_for('login'))  # Po rejestracji przekierowujemy na stronę logowania
+        flash('Registered successfully, you can now login.', 'success')
+        return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if form.validate_on_submit():  # Sprawdź, czy formularz został poprawnie przesłany
+    if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
 
-        if user:
-            print(f"User found: {user.username}")  # Debugging: User found in database
-            print(f"Stored password hash: {user.password}")  # Debugging: Hashed password in DB
-            print(f"Entered password: {form.password.data}")  # Debugging: Password entered by user
+        if user and check_password_hash(user.password, form.password.data):
+            login_user(user)
+            return redirect(url_for('home'))
+        flash('Invalid username or password.', 'danger')
 
-            # Check if the password is correct
-            if check_password_hash(user.password, form.password.data):
-                print("Password matched!")  # Debugging: Password match successful
-                login_user(user)  # Loguj użytkownika
-                return redirect(url_for('home'))  # Po zalogowaniu przekieruj do strony głównej
-            else:
-                print("Password mismatch!")  # Debugging: Password mismatch
-        else:
-            print("User not found!")  # Debugging: User not found in database
-
-        flash('Invalid username or password', 'danger')
     return render_template('login.html', form=form)
 
 
@@ -76,13 +81,14 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))  # Przekierowanie na stronę logowania po wylogowaniu
+    flash('Logout.', 'info')
+    return redirect(url_for('login'))
 
-
-@app.route('/home')
+@app.route('/gallery')
 @login_required
-def home():
-    return render_template('upload.html')  # Strona dostępna tylko dla zalogowanych użytkowników
+def gallery():
+    user_images = Image.query.filter_by(user_id=current_user.id).all()
+    return render_template('gallery.html', images=user_images)
 
 
 
@@ -95,6 +101,8 @@ def ensure_binary_mask(mask_np):
 
     mask_np[mask_np > 20] = 255
     return mask_np
+
+
 
 
 @app.route('/inpaint', methods=['POST'])
@@ -160,13 +168,14 @@ def inpaint():
         'results', f'input_image.{image_extension}'
     )
 
+    #save_image_to_db(result_path, image_path, current_user.id)
+
 
     return send_file(result_path, mimetype=f'image/{image_extension}')
 
 
-# Inicjalizacja bazy danych i tworzenie tabel
 with app.app_context():
-    db.create_all()  # Tworzy wszystkie tabele na podstawie modeli
+    db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)
