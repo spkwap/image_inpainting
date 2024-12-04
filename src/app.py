@@ -181,8 +181,8 @@ def inpaint():
     except FileNotFoundError:
         return jsonify({'error': 'Result file not found'}), 404
 
-    current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-    new_filename = f"photo_data_{current_time}.{image_extension}"
+    current_time = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+    new_filename = f"Photo saved on {current_time}"
 
     if current_user.is_authenticated:
         user_instance = User.query.get(current_user.id)

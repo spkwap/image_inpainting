@@ -22,9 +22,9 @@ try:
 except sqlite3.Error as e:
     print(f"Błąd podczas odczytu tabeli: {e}")
 
-# Jeśli chcesz zobaczyć dane w tabeli 'Image' (zdjęcia):
+
 try:
-    table_name = 'Image'  # Zmieniamy na tabelę 'Image'
+    table_name = 'images'
     cursor.execute(f"SELECT * FROM {table_name}")
     cursor.execute(f"PRAGMA table_info({table_name});")
     rows = cursor.fetchall()
