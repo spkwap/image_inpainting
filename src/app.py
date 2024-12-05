@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify, send_file, redirect, url_for, flash
+from flask import Flask, jsonify
 import os
 import subprocess
 from PIL import Image
@@ -8,32 +8,25 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 from forms import RegistrationForm, LoginForm
 from models import db, User, UserImage
-from flask import request
 from app import db
-from werkzeug.utils import secure_filename
 from flask import send_file
-from io import BytesIO
-from PIL import Image as PILImage
 import base64
-from werkzeug.utils import secure_filename
 from datetime import datetime
+from flask import render_template, request, redirect, url_for, flash
 
 
-# Inicjalizacja aplikacji
 app = Flask(__name__)
-app.config.from_object(Config)  # Ładowanie konfiguracji z pliku config.py
+app.config.from_object(Config)
 
-# Inicjalizacja bazy danych i logowania
 db.init_app(app)
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'  # Strona logowania
+login_manager.login_view = 'login'
 UPLOAD_FOLDER = 'data/uploads'
 RESULTS_FOLDER = 'results'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
 
-# Definicja funkcji ładowania użytkownika
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -90,17 +83,34 @@ def gallery():
 
     image_data_list = []
     for image in images:
-        # Jeśli obraz jest zapisany w formacie binarnym
         img_data_binary = base64.b64encode(image.image_data).decode('utf-8')
         image_data_list.append({'filename': image.filename, 'data': img_data_binary})
 
     return render_template('gallery.html', images=image_data_list)
 
 
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    image_count = UserImage.query.filter_by(user_id=current_user.id).count()
+
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+
+        if check_password_hash(current_user.password, current_password):
+            current_user.password = generate_password_hash(new_password)
+            db.session.commit()
+            flash('Password is changed!', 'success')
+        else:
+            flash('Old password is incorrect!', 'danger')
+
+    return render_template('profile.html', user=current_user, image_count=image_count)
+
+
+
 def ensure_binary_mask(mask_np):
-    """
-    Zamienia piksele na czne (0) lub białe (255) w masce.
-    """
 
     mask_np[mask_np <= 20] = 0
 
@@ -173,7 +183,6 @@ def inpaint():
         'results', f'input_image.{image_extension}'
     )
 
-    #save_image_to_db(result_path, image_path, current_user.id)
     try:
         with open(result_path, 'rb') as f:
             image_data = f.read()
@@ -188,8 +197,6 @@ def inpaint():
         user_instance = User.query.get(current_user.id)
         new_image = UserImage(filename=new_filename, image_data=image_data, user=user_instance)
     else:
-        # Handle the case when the user is not authenticated
-        # You can return an error, redirect, or any other response
         return "User not authenticated", 401
 
     db.session.add(new_image)

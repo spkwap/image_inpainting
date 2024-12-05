@@ -11,20 +11,19 @@
 
 <body>
 
-    <!-- Pasek nawigacji -->
     <header>
         <nav>
             <ul class="navbar">
                 <li><a href="{{ url_for('home') }}">Home Page</a></li>
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
                 {% endif %}
             </ul>
         </nav>
     </header>
 
-    <!-- Pasek powitalny -->
     {% if current_user.is_authenticated %}
     <div class="user-bar">
         <p>Hello, {{ current_user.username }}!</p>
@@ -50,12 +49,9 @@
                 <label for="brush-size">Brush Size:</label>
                 <input id="brush-size" type="range" min="20" max="70" value="10">
 
-                <!-- Edytor obrazka -->
                 <div class="editor-tools">
-                    <!-- Przycisk obracania -->
                     <button id="rotate-btn"><i class="fas fa-sync-alt"></i></button>
 
-                    <!-- Suwaki jasności i kontrastu -->
                     <div>
                         <label for="brightness">Brightness</label>
                         <input id="brightness" type="range" min="-100" max="100" value="0">
@@ -115,35 +111,29 @@
             reader.readAsDataURL(file);
         });
 
-        // Obracanie obrazu
         rotateBtn.addEventListener('click', () => {
             rotationAngle += 90;
             drawImageWithAdjustments();
         });
 
-        // Zmiana jasności
         brightnessInput.addEventListener('input', (e) => {
             brightness = e.target.value;
             drawImageWithAdjustments();
         });
 
-        // Zmiana kontrastu
         contrastInput.addEventListener('input', (e) => {
             contrast = e.target.value;
             drawImageWithAdjustments();
         });
 
-        // Rysowanie obrazu z aktualnymi ustawieniami
         function drawImageWithAdjustments() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Zastosowanie transformacji
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.rotate((rotationAngle * Math.PI) / 180);
             ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
-            // Zastosowanie efektów jasności i kontrastu
             ctx.filter = `brightness(${100 + parseInt(brightness)}%) contrast(${100 + parseInt(contrast)}%)`;
             ctx.drawImage(image, 0, 0, 512, 512);
             ctx.restore();
@@ -188,7 +178,6 @@
                 resultsContainer.innerHTML = ''; // Clear previous results
                 resultsContainer.appendChild(img);
 
-                // Dodanie przycisku pobierania
                 const downloadButton = document.createElement('button');
                 downloadButton.classList.add('download-btn');
                 downloadButton.innerText = 'Download Image';

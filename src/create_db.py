@@ -2,10 +2,9 @@ from app import app, db
 from models import User, UserImage
 
 with app.app_context():
-    db.create_all()  # Tworzy wszystkie tabele na podstawie modeli
+    db.create_all()
     print("Baza danych i tabele zostały utworzone.")
 
-    # Dodanie testowych użytkowników
     admin = User(username='admin', email='admin@example.com')
     admin.set_password('adminpassword')
 
@@ -17,7 +16,6 @@ with app.app_context():
     db.session.commit()
     print("Testowi użytkownicy zostali dodani.")
 
-    # Dodanie testowego zdjęcia
     try:
         with open('src/results/case1_input.png', 'rb') as f:
             image_data = f.read()
@@ -26,7 +24,6 @@ with app.app_context():
         image_data = None
 
     if image_data:
-        # Dodanie zdjęć do bazy danych
         image1 = UserImage(filename='image1.jpg', image_data=image_data, user=admin)
         image2 = UserImage(filename='image2.jpg', image_data=image_data, user=guest)
 

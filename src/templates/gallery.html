@@ -1,36 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Inpainting Tool</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% block extra_styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style_gallery.css') }}">
-</head>
+{% endblock %}
 
-<body>
+{% extends 'base_main.html' %}
 
-    <!-- Pasek nawigacji -->
-    <header>
-        <nav>
-            <ul class="navbar">
-                <li><a href="{{ url_for('home') }}">Home Page</a></li>
-                {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-    </header>
+{% block title %}Gallery - {{ current_user.username }}{% endblock %}
+
+{% block content %}
     <main>
         <h1>{{ current_user.username }} Gallery</h1>
-            <div class="gallery">
-                {% for image in images %}
-                    <div class="image-container">
-                        <h3>{{ image.filename }}</h3>
-                        <img src="data:image/jpeg;base64,{{ image.data }}" alt="{{ image.filename }}">
-                    </div>
-                {% endfor %}
-            </div>
+        <div class="gallery">
+            {% for image in images %}
+                <div class="image-container">
+                    <h3>{{ image.filename }}</h3>
+                    <img src="data:image/jpeg;base64,{{ image.data }}" alt="{{ image.filename }}">
+                </div>
+            {% endfor %}
+        </div>
     </main>
+{% endblock %}

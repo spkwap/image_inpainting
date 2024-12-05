@@ -14,7 +14,6 @@ body {
     padding-bottom: 50px;
 }
 
-/* Pasek nawigacyjny */
 header {
     position: fixed;
     top: 0;
@@ -51,7 +50,6 @@ header {
     transform: translateY(-3px);
 }
 
-/* Pasek powitalny */
 .user-bar {
     width: 100%;
     background-color: #444;
@@ -61,20 +59,18 @@ header {
     font-size: 18px;
     font-weight: 500;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-top: 60px; /* Aby zachować odstęp od nawigacji */
+    margin-top: 60px;
 }
 
 main {
-    padding-top: 20px; /* Dodatkowy odstęp pod paskiem powitalnym */
+    padding-top: 20px;
     text-align: center;
-
-    /* Dodane style */
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Wyśrodkowanie pionowe */
-    align-items: center;    /* Wyśrodkowanie poziome */
-    min-height: calc(100vh - 120px); /* Wysokość widoczna, pomniejszona o header i user-bar */
-    margin-top: 60px; /* Odsunięcie od user-bar */
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 120px);
+    margin-top: 60px;
 }
 
 
@@ -272,24 +268,24 @@ button:hover {
 }
 
 #toggle-dark-mode {
-    margin: 20px 20px 0 auto; /* Odsunięcie od góry i wycentrowanie do prawej */
+    margin: 20px 20px 0 auto;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 24px;
     cursor: pointer;
     color: #34495e;
-    background-color: white; /* Białe tło */
-    border-radius: 50%; /* Okrągły przycisk */
-    padding: 10px; /* Dodatkowy odstęp wokół ikony */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Lekki cień */
-    width: 50px; /* Szerokość przycisku */
-    height: 50px; /* Wysokość przycisku */
+    background-color: white;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    width: 50px;
+    height: 50px;
 }
 
 #toggle-dark-mode:hover {
-    background-color: #f2f2f2; /* Subtelny efekt hover */
-    color: #2980b9; /* Zmiana koloru na hover */
+    background-color: #f2f2f2;
+    color: #2980b9;
 }
 
 

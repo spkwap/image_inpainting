@@ -12,7 +12,6 @@
     <form method="POST">
         {{ form.hidden_tag() }}
 
-        <!-- Username -->
         <div class="form-group">
             <label for="username">{{ form.username.label }}</label>
             {{ form.username(class="form-control") }}
@@ -25,7 +24,6 @@
             {% endif %}
         </div>
 
-        <!-- Email -->
         <div class="form-group">
             <label for="email">{{ form.email.label }}</label>
             {{ form.email(class="form-control") }}
@@ -38,7 +36,6 @@
             {% endif %}
         </div>
 
-        <!-- Password -->
         <div class="form-group">
             <label for="password">{{ form.password.label }}</label>
             {{ form.password(class="form-control") }}
@@ -51,7 +48,6 @@
             {% endif %}
         </div>
 
-        <!-- Confirm Password -->
         <div class="form-group">
             <label for="confirm_password">{{ form.confirm_password.label }}</label>
             {{ form.confirm_password(class="form-control") }}
@@ -64,7 +60,6 @@
             {% endif %}
         </div>
 
-        <!-- Submit Button -->
         <div class="form-group">
             <button type="submit">Register</button>
         </div>

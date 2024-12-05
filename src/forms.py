@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import InputRequired, Length, DataRequired, Email, EqualTo
 from wtforms import ValidationError
-from models import User  # Zakładając, że masz model User w models.py
+from models import User
 
 
 class RegistrationForm(FlaskForm):
@@ -24,13 +24,11 @@ class RegistrationForm(FlaskForm):
         EqualTo('password', message="Passwords must match.")
     ])
 
-    # Walidacja unikalności nazwy użytkownika
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user:
             raise ValidationError('This username is already taken. Please choose another one.')
 
-    # Walidacja unikalności adresu e-mail
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user:
