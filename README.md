@@ -6,7 +6,7 @@ This project implements an image inpainting application using a pretrained neura
 
 - Upload images
 - Draw masks on images
-- Repaint images using a neural network model
+- Repaint images using a neural network model from https://github.com/MADF-inpainting/Pytorch-MADF
 
 ## Installation
 
