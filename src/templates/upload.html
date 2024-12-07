@@ -47,7 +47,7 @@
                 </div>
 
                 <label for="brush-size">Brush Size:</label>
-                <input id="brush-size" type="range" min="20" max="70" value="10">
+                <input id="brush-size" type="range" min="70" max="120" value="5">
 
                 <div class="editor-tools">
                     <button id="rotate-btn"><i class="fas fa-sync-alt"></i></button>
@@ -89,7 +89,7 @@
 
         let isDrawing = false;
         let image = new Image();
-        let brushSize = 20;
+        let brushSize = 70;
         let rotationAngle = 0;
         let brightness = 0;
         let contrast = 0;
@@ -103,8 +103,18 @@
             const reader = new FileReader();
             reader.onload = function(event) {
                 image.onload = function() {
+                    const aspectRatio = image.width / image.height;
+                    if (aspectRatio > 1) {
+                        // Obraz szeroki
+                        canvas.width = 512;
+                        canvas.height = 512 / aspectRatio;
+                    } else {
+                        // Obraz wysoki
+                        canvas.width = 512 * aspectRatio;
+                        canvas.height = 512;
+                    }
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(image, 0, 0, 512, 512);
+                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
                 };
                 image.src = event.target.result;
             };
@@ -153,7 +163,7 @@
 
         clearBtn.addEventListener('click', () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(image, 0, 0, 512, 512);
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
         });
 
         submitBtn.addEventListener('click', async function() {

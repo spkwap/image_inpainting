@@ -8,6 +8,14 @@ main {
     text-align: center;
 }
 
+h1 {
+    margin-bottom: 20px;
+}
+
+h3 {
+    margin-bottom: 10px;
+}
+
 .upload-section {
     display: flex;
     flex-direction: column;
@@ -15,19 +23,33 @@ main {
     align-items: center;
 }
 
-.download-btn {
-    background: #2980b9;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
+.btn-download {
+    background-color: #2980b9;
+    color: white;
+    padding: 8px 12px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    margin-top: 10px;
-    transition: background 0.3s ease, transform 0.2s ease;
 }
 
-.download-btn:hover {
-    background: #1f618d;
-    transform: scale(1.05);
+.btn-download:hover {
+    background-color: #1f618d;
 }
+
+.btn-delete {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-delete:hover {
+    background-color: darkred;
+}
+.button-container {
+    margin-top: 10px;
+    margin-bottom: 30px;
+}
+

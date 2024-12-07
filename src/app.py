@@ -13,6 +13,7 @@ from flask import send_file
 import base64
 from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash
+from io import BytesIO
 
 
 app = Flask(__name__)
@@ -77,17 +78,40 @@ def logout():
     return redirect(url_for('login'))
 
 @app.route('/gallery')
+@login_required
 def gallery():
-
     images = UserImage.query.filter(UserImage.user_id == current_user.id).all()
-
-    image_data_list = []
-    for image in images:
-        img_data_binary = base64.b64encode(image.image_data).decode('utf-8')
-        image_data_list.append({'filename': image.filename, 'data': img_data_binary})
-
+    image_data_list = [
+        {'id': image.id, 'filename': image.filename, 'data': base64.b64encode(image.image_data).decode('utf-8')}
+        for image in images
+    ]
     return render_template('gallery.html', images=image_data_list)
 
+
+@app.route('/delete_image/<int:image_id>', methods=['POST'])
+@login_required
+def delete_image(image_id):
+    image = UserImage.query.filter_by(id=image_id, user_id=current_user.id).first()
+    if not image:
+        flash('Image not found or you do not have permission to delete it.', 'danger')
+        return redirect(url_for('gallery'))
+
+    db.session.delete(image)
+    db.session.commit()
+    flash('Image deleted successfully!', 'success')
+    return redirect(url_for('gallery'))
+
+@app.route('/download_image/<int:image_id>', methods=['POST'])
+def download_image(image_id):
+    image = UserImage.query.get(image_id)
+
+    if image is None:
+        return "Image not found", 404
+
+    image_data = image.image_data
+    image_io = BytesIO(image_data)
+
+    return send_file(image_io, mimetype='image/jpeg', as_attachment=True, download_name=image.filename)
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -136,6 +160,7 @@ def inpaint():
     try:
 
         image = Image.open(image_path).convert("RGB")
+        original_size = image.size
         image.save(image_path)
     except Exception as e:
         return jsonify({'error': f'Failed to process the uploaded image: {e}'}), 500
@@ -184,23 +209,31 @@ def inpaint():
     )
 
     try:
-        with open(result_path, 'rb') as f:
-            image_data = f.read()
+        with Image.open(result_path) as result_image:
+            resized_image = result_image.resize(original_size, Image.LANCZOS)
+            resized_image.save(result_path)
+
 
     except FileNotFoundError:
         return jsonify({'error': 'Result file not found'}), 404
 
-    current_time = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
-    new_filename = f"Photo saved on {current_time}"
+    try:
+        with open(result_path, 'rb') as f:
+            image_data = f.read()
 
-    if current_user.is_authenticated:
-        user_instance = User.query.get(current_user.id)
-        new_image = UserImage(filename=new_filename, image_data=image_data, user=user_instance)
-    else:
-        return "User not authenticated", 401
+        current_time = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+        new_filename = f"Photo saved {current_time}"
 
-    db.session.add(new_image)
-    db.session.commit()
+        if current_user.is_authenticated:
+            user_instance = User.query.get(current_user.id)
+            new_image = UserImage(filename=new_filename, image_data=image_data, user=user_instance)
+        else:
+            return "User not authenticated", 401
+
+        db.session.add(new_image)
+        db.session.commit()
+    except Exception as e:
+        return jsonify({'error': f'Failed to save the result: {e}'}), 500
 
     return send_file(result_path, mimetype=f'image/{image_extension}')
 
