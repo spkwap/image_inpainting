@@ -146,38 +146,35 @@ def ensure_binary_mask(mask_np):
 
 @app.route('/inpaint', methods=['POST'])
 def inpaint():
-
     image_file = request.files['image']
-    image_extension = image_file.filename.split('.')[-1].lower()
+    model_name = request.form.get('model')
 
+    if not model_name or model_name not in ['places2.pth', 'celeba.pth', 'psv.pth']:
+        return jsonify({'error': 'Invalid model selected.'}), 400
+
+    image_extension = image_file.filename.split('.')[-1].lower()
     if image_extension not in ['jpg', 'jpeg', 'png']:
         return jsonify({'error': 'Only jpg, jpeg, or png images are allowed.'}), 400
-
 
     image_path = os.path.join(UPLOAD_FOLDER, f'input_image.{image_extension}')
     image_file.save(image_path)
 
     try:
-
         image = Image.open(image_path).convert("RGB")
         original_size = image.size
         image.save(image_path)
     except Exception as e:
         return jsonify({'error': f'Failed to process the uploaded image: {e}'}), 500
 
-
     try:
         image_np = np.array(image)
-
         mask = (~np.all(image_np == [255, 255, 255], axis=-1)).astype(np.uint8) * 255
         mask_image = Image.fromarray(mask, mode='L')
-
 
         mask_path = os.path.join(UPLOAD_FOLDER, f'input_mask.{image_extension}')
         mask_image.save(mask_path)
     except Exception as e:
         return jsonify({'error': f'Failed to generate or save the mask: {e}'}), 500
-
 
     list_file_path = 'places2_example_list'
     try:
@@ -188,10 +185,9 @@ def inpaint():
     except Exception as e:
         return jsonify({'error': f'Failed to prepare the example list file: {e}'}), 500
 
-
     try:
         result = subprocess.run(
-            ['python', 'src/test.py', '--list_file', list_file_path, '--snapshot', 'data/places2.pth'],
+            ['python', 'src/test.py', '--list_file', list_file_path, '--snapshot', f'data/{model_name}'],
             check=True, capture_output=True, text=True
         )
         print("stdout:", result.stdout)
@@ -202,7 +198,6 @@ def inpaint():
                      f"stdout: {e.stdout}, stderr: {e.stderr}"
         }), 500
 
-
     result_path = os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), '..')),
         'results', f'input_image.{image_extension}'
@@ -212,8 +207,6 @@ def inpaint():
         with Image.open(result_path) as result_image:
             resized_image = result_image.resize(original_size, Image.LANCZOS)
             resized_image.save(result_path)
-
-
     except FileNotFoundError:
         return jsonify({'error': 'Result file not found'}), 404
 
@@ -236,7 +229,6 @@ def inpaint():
         return jsonify({'error': f'Failed to save the result: {e}'}), 500
 
     return send_file(result_path, mimetype=f'image/{image_extension}')
-
 
 
 
