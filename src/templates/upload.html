@@ -35,8 +35,9 @@
                 <h1>How to Use</h1>
                 <p>1. Upload an image.<br>
                    2. Draw a mask on the image where you want changes.<br>
-                   3. Click "Submit" to process the image.<br>
-                   4. The processed image will appear below with a download button.</p>
+                   3. Select a model.<br>
+                   4. Click "Submit" to process the image.<br>
+                   5. The processed image will appear below with a download button.</p>
             </div>
             <div class="upload-section">
                 <i id="toggle-dark-mode" class="fas fa-moon"></i>
@@ -46,8 +47,15 @@
                     <input type="file" id="image" name="image">
                 </div>
 
+                <label for="model">Choose a Model</label>
+                <select id="model" name="model">
+                    <option value="places2.pth">Places2</option>
+                    <option value="celeba.pth">CelebA</option>
+                    <option value="psv.pth">PSV</option>
+                </select>
+
                 <label for="brush-size">Brush Size:</label>
-                <input id="brush-size" type="range" min="70" max="120" value="5">
+                <input id="brush-size" type="range" min="5" max="120" value="70">
 
                 <div class="editor-tools">
                     <button id="rotate-btn"><i class="fas fa-sync-alt"></i></button>
@@ -78,6 +86,7 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const imageInput = document.getElementById('image');
+        const modelInput = document.getElementById('model');
         const clearBtn = document.getElementById('clear-btn');
         const submitBtn = document.getElementById('submit-btn');
         const brushSizeInput = document.getElementById('brush-size');
@@ -105,11 +114,11 @@
                 image.onload = function() {
                     const aspectRatio = image.width / image.height;
                     if (aspectRatio > 1) {
-                        // Obraz szeroki
+                        // Wide image
                         canvas.width = 512;
                         canvas.height = 512 / aspectRatio;
                     } else {
-                        // Obraz wysoki
+                        // Tall image
                         canvas.width = 512 * aspectRatio;
                         canvas.height = 512;
                     }
@@ -145,7 +154,7 @@
             ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
             ctx.filter = `brightness(${100 + parseInt(brightness)}%) contrast(${100 + parseInt(contrast)}%)`;
-            ctx.drawImage(image, 0, 0, 512, 512);
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
             ctx.restore();
         }
 
@@ -172,6 +181,7 @@
 
             const formData = new FormData();
             formData.append('image', maskBlob, 'mask.png');
+            formData.append('model', modelInput.value);
 
             const response = await fetch('/inpaint', {
                 method: 'POST',
@@ -187,24 +197,9 @@
 
                 resultsContainer.innerHTML = ''; // Clear previous results
                 resultsContainer.appendChild(img);
-
-                const downloadButton = document.createElement('button');
-                downloadButton.classList.add('download-btn');
-                downloadButton.innerText = 'Download Image';
-                downloadButton.onclick = () => {
-                    const a = document.createElement('a');
-                    a.href = resultURL;
-                    a.download = 'inpainted_image.png';
-                    a.click();
-                };
-                resultsContainer.appendChild(downloadButton);
-            } else {
-                alert('Error during inpainting!');
             }
         });
-        toggleDarkModeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-        });
+
     </script>
 </body>
 </html>
