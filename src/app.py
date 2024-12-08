@@ -88,6 +88,29 @@ def gallery():
     return render_template('gallery.html', images=image_data_list)
 
 
+@app.route('/delete_all_images', methods=['POST'])
+@login_required
+def delete_all_images():
+    try:
+        images = UserImage.query.filter_by(user_id=current_user.id).all()
+
+        if not images:
+            flash('No images to delete.', 'warning')
+            return redirect(url_for('gallery'))
+
+        for image in images:
+            db.session.delete(image)
+
+        db.session.commit()
+        flash('All images deleted successfully!', 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting images: {e}', 'danger')
+
+    return redirect(url_for('gallery'))
+
+
 @app.route('/delete_image/<int:image_id>', methods=['POST'])
 @login_required
 def delete_image(image_id):
@@ -111,7 +134,7 @@ def download_image(image_id):
     image_data = image.image_data
     image_io = BytesIO(image_data)
 
-    return send_file(image_io, mimetype='image/jpeg', as_attachment=True, download_name=image.filename)
+    return send_file(image_io, mimetype='image/png', as_attachment=True, download_name=f"{image.filename}.png")
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -133,13 +156,28 @@ def profile():
     return render_template('profile.html', user=current_user, image_count=image_count)
 
 
+@app.route('/delete_account', methods=['POST'])
+@login_required
+def delete_account():
+    try:
+        user = current_user
 
-def ensure_binary_mask(mask_np):
+        images = UserImage.query.filter_by(user_id=user.id).all()
+        for image in images:
+            db.session.delete(image)
 
-    mask_np[mask_np <= 20] = 0
+        db.session.delete(user)
+        db.session.commit()
 
-    mask_np[mask_np > 20] = 255
-    return mask_np
+        logout_user()
+
+        flash('Your account has been deleted successfully.', 'success')
+        return redirect(url_for('login'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting account: {e}', 'danger')
+        return redirect(url_for('profile'))
 
 
 @app.route('/upload_image', methods=['POST'])
@@ -148,9 +186,7 @@ def upload_image():
     if not image_file:
         return jsonify({'error': 'No image provided'}), 400
 
-    image_extension = image_file.filename.split('.')[-1].lower()
-    if image_extension not in ['jpg', 'jpeg', 'png']:
-        return jsonify({'error': 'Invalid image format. Use jpg, jpeg, or png.'}), 400
+    image_extension = "png"
 
     image_path = os.path.join(UPLOAD_FOLDER, f'original_image.{image_extension}')
     try:
@@ -168,9 +204,7 @@ def inpaint():
     if not model_name or model_name not in ['places2.pth', 'celeba.pth', 'psv.pth']:
         return jsonify({'error': 'Invalid model selected.'}), 400
 
-    image_extension = image_file.filename.split('.')[-1].lower()
-    if image_extension not in ['jpg', 'jpeg', 'png']:
-        return jsonify({'error': 'Only jpg, jpeg, or png images are allowed.'}), 400
+    image_extension = "png"
 
     image_path = os.path.join(UPLOAD_FOLDER, f'input_image.{image_extension}')
     image_file.save(image_path)
