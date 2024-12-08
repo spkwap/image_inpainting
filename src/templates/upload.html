@@ -57,19 +57,6 @@
                 <label for="brush-size">Brush Size:</label>
                 <input id="brush-size" type="range" min="5" max="120" value="70">
 
-                <div class="editor-tools">
-                    <button id="rotate-btn"><i class="fas fa-sync-alt"></i></button>
-
-                    <div>
-                        <label for="brightness">Brightness</label>
-                        <input id="brightness" type="range" min="-100" max="100" value="0">
-                    </div>
-                    <div>
-                        <label for="contrast">Contrast</label>
-                        <input id="contrast" type="range" min="-100" max="100" value="0">
-                    </div>
-                </div>
-
                 <canvas id="canvas" width="512" height="512"></canvas>
                 <div class="buttons">
                     <button id="clear-btn">Clear Mask</button>
@@ -92,17 +79,11 @@
         const brushSizeInput = document.getElementById('brush-size');
         const resultsContainer = document.querySelector('.results');
         const toggleDarkModeBtn = document.getElementById('toggle-dark-mode');
-        const rotateBtn = document.getElementById('rotate-btn');
-        const brightnessInput = document.getElementById('brightness');
-        const contrastInput = document.getElementById('contrast');
 
         let isDrawing = false;
         let image = new Image();
         let brushSize = 70;
-        let rotationAngle = 0;
-        let brightness = 0;
-        let contrast = 0;
-        let uploadedImageExtension = 'png';
+
 
         brushSizeInput.addEventListener('input', (e) => {
             brushSize = e.target.value;
@@ -112,18 +93,9 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            const extension = file.name.split('.').pop().toLowerCase();
-            if (['jpg', 'jpeg', 'png'].includes(extension)) {
-                uploadedImageExtension = extension;
-            } else {
-                alert('Invalid image format. Only jpg, jpeg, or png are supported.');
-                return;
-            }
-
             const formData = new FormData();
             formData.append('image', file);
 
-            // Wyślij obraz do serwera
             const response = await fetch('/upload_image', {
                 method: 'POST',
                 body: formData,
@@ -139,7 +111,6 @@
                 alert('Failed to upload image: ' + error.error);
             }
 
-            // Załaduj obraz na canvas
             const reader = new FileReader();
             reader.onload = function(event) {
                 image.onload = function() {
@@ -159,35 +130,6 @@
             reader.readAsDataURL(file);
         });
 
-
-        rotateBtn.addEventListener('click', () => {
-            rotationAngle += 90;
-            drawImageWithAdjustments();
-        });
-
-        brightnessInput.addEventListener('input', (e) => {
-            brightness = e.target.value;
-            drawImageWithAdjustments();
-        });
-
-        contrastInput.addEventListener('input', (e) => {
-            contrast = e.target.value;
-            drawImageWithAdjustments();
-        });
-
-        function drawImageWithAdjustments() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.save();
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate((rotationAngle * Math.PI) / 180);
-            ctx.translate(-canvas.width / 2, -canvas.height / 2);
-
-            ctx.filter = `brightness(${100 + parseInt(brightness)}%) contrast(${100 + parseInt(contrast)}%)`;
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            ctx.restore();
-        }
-
         canvas.addEventListener('mousedown', () => { isDrawing = true; });
         canvas.addEventListener('mouseup', () => { isDrawing = false; });
         canvas.addEventListener('mousemove', (e) => {
@@ -205,18 +147,27 @@
             ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
         });
 
-        submitBtn.addEventListener('click', async function() {
-            const mimeType = uploadedImageExtension === 'jpg' ? 'image/jpeg' : `image/${uploadedImageExtension}`;
-            const maskData = canvas.toDataURL(mimeType);
-            const maskBlob = await fetch(maskData).then(res => res.blob());
+
+        toggleDarkModeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                toggleDarkModeBtn.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                toggleDarkModeBtn.classList.replace('fa-sun', 'fa-moon');
+            }
+        });
+
+        submitBtn.addEventListener('click', async function () {
+            const maskData = canvas.toDataURL('image/png');
+            const maskBlob = await fetch(maskData).then((res) => res.blob());
 
             const formData = new FormData();
-            formData.append('image', maskBlob, `mask.${uploadedImageExtension}`);
+            formData.append('image', maskBlob, 'mask.png');
             formData.append('model', modelInput.value);
 
             const response = await fetch('/inpaint', {
                 method: 'POST',
-                body: formData
+                body: formData,
             });
 
             if (response.ok) {
@@ -228,8 +179,18 @@
 
                 resultsContainer.innerHTML = '';
                 resultsContainer.appendChild(img);
+
+                const downloadBtn = document.createElement('a');
+                downloadBtn.href = resultURL;
+                downloadBtn.download = 'inpainted_image.png';
+                downloadBtn.textContent = 'Download';
+                downloadBtn.classList.add('download-btn');
+                resultsContainer.appendChild(downloadBtn);
+            } else {
+                alert('Failed to process the image.');
             }
         });
+
 
     </script>
 </body>
