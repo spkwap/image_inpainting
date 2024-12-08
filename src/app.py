@@ -142,6 +142,22 @@ def ensure_binary_mask(mask_np):
     return mask_np
 
 
+@app.route('/upload_image', methods=['POST'])
+def upload_image():
+    image_file = request.files.get('image')
+    if not image_file:
+        return jsonify({'error': 'No image provided'}), 400
+
+    image_extension = image_file.filename.split('.')[-1].lower()
+    if image_extension not in ['jpg', 'jpeg', 'png']:
+        return jsonify({'error': 'Invalid image format. Use jpg, jpeg, or png.'}), 400
+
+    image_path = os.path.join(UPLOAD_FOLDER, f'original_image.{image_extension}')
+    try:
+        image_file.save(image_path)
+        return jsonify({'message': 'Image uploaded successfully', 'path': image_path}), 200
+    except Exception as e:
+        return jsonify({'error': f'Failed to save image: {e}'}), 500
 
 
 @app.route('/inpaint', methods=['POST'])
@@ -179,9 +195,9 @@ def inpaint():
     list_file_path = 'places2_example_list'
     try:
         with open(list_file_path, 'w') as f:
-            image_path = image_path.replace("\\", "/")
+            original_image_path = f"data/uploads/original_image.{image_extension}"
             mask_path = mask_path.replace("\\", "/")
-            f.write(f"{image_path}\t{mask_path}\n")
+            f.write(f"{original_image_path}\t{mask_path}\n")
     except Exception as e:
         return jsonify({'error': f'Failed to prepare the example list file: {e}'}), 500
 
@@ -200,7 +216,7 @@ def inpaint():
 
     result_path = os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), '..')),
-        'results', f'input_image.{image_extension}'
+        'results', f'original_image.{image_extension}'
     )
 
     try:

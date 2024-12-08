@@ -102,23 +102,52 @@
         let rotationAngle = 0;
         let brightness = 0;
         let contrast = 0;
+        let uploadedImageExtension = 'png';
 
         brushSizeInput.addEventListener('input', (e) => {
             brushSize = e.target.value;
         });
 
-        imageInput.addEventListener('change', function(e) {
+        imageInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
+            if (!file) return;
+
+            const extension = file.name.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png'].includes(extension)) {
+                uploadedImageExtension = extension;
+            } else {
+                alert('Invalid image format. Only jpg, jpeg, or png are supported.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // Wyślij obraz do serwera
+            const response = await fetch('/upload_image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Image uploaded:', data.path);
+                alert('Image uploaded successfully!');
+            } else {
+                const error = await response.json();
+                console.error('Upload failed:', error);
+                alert('Failed to upload image: ' + error.error);
+            }
+
+            // Załaduj obraz na canvas
             const reader = new FileReader();
             reader.onload = function(event) {
                 image.onload = function() {
                     const aspectRatio = image.width / image.height;
                     if (aspectRatio > 1) {
-                        // Wide image
                         canvas.width = 512;
                         canvas.height = 512 / aspectRatio;
                     } else {
-                        // Tall image
                         canvas.width = 512 * aspectRatio;
                         canvas.height = 512;
                     }
@@ -129,6 +158,7 @@
             };
             reader.readAsDataURL(file);
         });
+
 
         rotateBtn.addEventListener('click', () => {
             rotationAngle += 90;
@@ -176,11 +206,12 @@
         });
 
         submitBtn.addEventListener('click', async function() {
-            const maskData = canvas.toDataURL('image/png');
+            const mimeType = uploadedImageExtension === 'jpg' ? 'image/jpeg' : `image/${uploadedImageExtension}`;
+            const maskData = canvas.toDataURL(mimeType);
             const maskBlob = await fetch(maskData).then(res => res.blob());
 
             const formData = new FormData();
-            formData.append('image', maskBlob, 'mask.png');
+            formData.append('image', maskBlob, `mask.${uploadedImageExtension}`);
             formData.append('model', modelInput.value);
 
             const response = await fetch('/inpaint', {
@@ -195,7 +226,7 @@
                 const img = document.createElement('img');
                 img.src = resultURL;
 
-                resultsContainer.innerHTML = ''; // Clear previous results
+                resultsContainer.innerHTML = '';
                 resultsContainer.appendChild(img);
             }
         });
