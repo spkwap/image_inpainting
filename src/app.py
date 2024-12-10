@@ -110,6 +110,31 @@ def delete_all_images():
 
     return redirect(url_for('gallery'))
 
+@app.route('/edit_image/<int:image_id>', methods=['GET', 'POST'])
+@login_required
+def edit_image(image_id):
+    image = UserImage.query.filter_by(id=image_id, user_id=current_user.id).first()
+
+    if not image:
+        flash('Image not found or you do not have permission to edit it.', 'danger')
+        return redirect(url_for('gallery'))
+
+    if request.method == 'GET':
+        image_data = base64.b64encode(image.image_data).decode('utf-8')
+        return render_template('edit_image.html', image_id=image.id, image_data=image_data)
+
+    if request.method == 'POST':
+        try:
+            new_image_data = request.files.get('edited_image').read()
+
+            image.image_data = new_image_data
+            db.session.commit()
+
+            return jsonify({"success": True})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"success": False, "error": str(e)})
+
 
 @app.route('/delete_image/<int:image_id>', methods=['POST'])
 @login_required

@@ -54,3 +54,31 @@ h3 {
     margin-bottom: 30px;
 }
 
+
+.btn-edit {
+    background-color: gray;
+    margin-top: 15px;
+    margin-bottom: 0px;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-edit:hover {
+    background-color: darkblue;
+}
+
+.btn-all-delete {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-all-delete:hover {
+    background-color: darkred;
+}
