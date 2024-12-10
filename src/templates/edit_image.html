@@ -1,0 +1,112 @@
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style_edit.css') }}">
+{% endblock %}
+
+{% extends "base_main.html" %}
+
+{% block title %}Edit Image{% endblock %}
+
+{% block content %}
+<h1>Edit Image</h1>
+<div>
+    <canvas id="editCanvas"></canvas>
+    <div class="controls">
+        <div>
+            <label for="brightnessSlider">Brightness</label>
+            <input id="brightnessSlider" type="range" min="-50" max="50" value="0">
+        </div>
+        <div>
+            <label for="contrastSlider">Contrast</label>
+            <input id="contrastSlider" type="range" min="-50" max="50" value="0">
+        </div>
+        <div>
+            <label for="saturationSlider">Saturation</label>
+            <input id="saturationSlider" type="range" min="-50" max="50" value="0">
+        </div>
+    </div>
+
+    <div class="button-group">
+        <button onclick="resetImage()">Reset</button>
+        <form id="saveForm" method="POST" enctype="multipart/form-data">
+            <button type="button" onclick="confirmAndSaveImage()">Save</button>
+        </form>
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/camanjs/4.1.2/caman.full.min.js"></script>
+<script>
+    const imageData = 'data:image/png;base64,{{ image_data }}';
+    const canvas = document.getElementById('editCanvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+
+    let originalData;
+
+    img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        originalData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    };
+    img.src = imageData;
+
+    // Function to apply adjustments based on slider values
+    function applyAdjustments() {
+        const brightness = parseInt(document.getElementById('brightnessSlider').value);
+        const contrast = parseInt(document.getElementById('contrastSlider').value);
+        const saturation = parseInt(document.getElementById('saturationSlider').value);
+
+        Caman('#editCanvas', function () {
+            this.revert(false); // Prevent full revert, maintain incremental changes
+            this.brightness(brightness);
+            this.contrast(contrast / 2); // Reduce contrast effect strength
+            this.saturation(saturation);
+            this.render();
+        });
+    }
+
+    // Add event listeners to sliders
+    document.getElementById('brightnessSlider').addEventListener('input', applyAdjustments);
+    document.getElementById('contrastSlider').addEventListener('input', applyAdjustments);
+    document.getElementById('saturationSlider').addEventListener('input', applyAdjustments);
+
+    function resetImage() {
+        document.getElementById('brightnessSlider').value = 0;
+        document.getElementById('contrastSlider').value = 0;
+        document.getElementById('saturationSlider').value = 0;
+
+        Caman('#editCanvas', function () {
+            this.revert(true);
+            this.render();
+        });
+    }
+
+    function confirmAndSaveImage() {
+        const confirmSave = confirm("Are you sure you want to save the current version of the image?");
+        if (confirmSave) {
+            saveImage();
+        }
+    }
+
+    function saveImage() {
+        canvas.toBlob(function (blob) {
+            const formData = new FormData();
+            formData.append('edited_image', blob, 'edited_image.png');
+            fetch(`/edit_image/{{ image_id }}`, {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Image saved successfully!');
+                        window.location.href = '/gallery';
+                    } else {
+                        alert('Failed to save image.');
+                    }
+                });
+        });
+    }
+</script>
+{% endblock %}
