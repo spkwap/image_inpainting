@@ -9,9 +9,11 @@
 {% block content %}
     <main>
         <h1>{{ current_user.username }} Gallery</h1>
-        <form action="{{ url_for('delete_all_images') }}" method="POST">
-            <button type="submit" class="btn-all-delete" onclick="return confirm('Are you sure you want to delete all images?');">Delete All Images</button>
-        </form>
+        {% if images|length > 0 %}
+            <form action="{{ url_for('delete_all_images') }}" method="POST">
+                <button type="submit" class="btn-all-delete" onclick="return confirm('Are you sure you want to delete all images?');">Delete All Images</button>
+            </form>
+        {% endif %}
         <div class="gallery">
             {% for image in images %}
                 <div class="image-container">
