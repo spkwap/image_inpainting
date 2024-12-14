@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField
 from wtforms.validators import InputRequired, Length, DataRequired, Email, EqualTo
 from wtforms import ValidationError
 from models import User
+from email_validator import validate_email, EmailNotValidError
 
 
 class RegistrationForm(FlaskForm):
@@ -33,6 +34,11 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError('This email is already registered. Please choose another one.')
+
+        try:
+            validate_email(email.data)
+        except EmailNotValidError as e:
+            raise ValidationError(f"Invalid email address: {e}")
 
 
 class LoginForm(FlaskForm):
