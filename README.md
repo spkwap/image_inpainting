@@ -1,7 +1,7 @@
 # Image Inpainting Project
 
 This project implements an image inpainting application using a pretrained neural network model. Users can upload an image, draw a mask to indicate the area they want to inpaint, and the application will recreate the image without the masked area.
-
+Used code from https://github.com/MADF-inpainting/Pytorch-MADF
 ## Features
 
 - Upload images
