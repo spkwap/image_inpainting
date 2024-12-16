@@ -63,6 +63,11 @@
                     <button id="clear-btn">Clear Mask</button>
                     <button id="submit-btn">Submit</button>
                 </div>
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>Processing, please wait...</p>
+                </div>
+
                 <div class="results"></div>
 
             </div>
@@ -152,7 +157,6 @@
         document.addEventListener("DOMContentLoaded", () => {
             const toggleDarkModeBtn = document.getElementById('toggle-dark-mode');
 
-            // Check local storage for dark mode setting
             if (localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark-mode');
                 toggleDarkModeBtn.classList.replace('fa-moon', 'fa-sun');
@@ -180,31 +184,42 @@
             formData.append('image', maskBlob, 'mask.png');
             formData.append('model', modelInput.value);
 
-            const response = await fetch('/inpaint', {
-                method: 'POST',
-                body: formData,
-            });
+            const loadingIndicator = document.getElementById('loading');
+            loadingIndicator.classList.remove('hidden');
 
-            if (response.ok) {
-                const resultBlob = await response.blob();
-                const resultURL = URL.createObjectURL(resultBlob);
+            try {
+                const response = await fetch('/inpaint', {
+                    method: 'POST',
+                    body: formData,
+                });
 
-                const img = document.createElement('img');
-                img.src = resultURL;
+                if (response.ok) {
+                    const resultBlob = await response.blob();
+                    const resultURL = URL.createObjectURL(resultBlob);
 
-                resultsContainer.innerHTML = '';
-                resultsContainer.appendChild(img);
+                    const img = document.createElement('img');
+                    img.src = resultURL;
 
-                const downloadBtn = document.createElement('a');
-                downloadBtn.href = resultURL;
-                downloadBtn.download = 'inpainted_image.png';
-                downloadBtn.textContent = 'Download';
-                downloadBtn.classList.add('download-btn');
-                resultsContainer.appendChild(downloadBtn);
-            } else {
-                alert('Failed to process the image.');
+                    resultsContainer.innerHTML = '';
+                    resultsContainer.appendChild(img);
+
+                    const downloadBtn = document.createElement('a');
+                    downloadBtn.href = resultURL;
+                    downloadBtn.download = 'inpainted_image.png';
+                    downloadBtn.textContent = 'Download';
+                    downloadBtn.classList.add('download-btn');
+                    resultsContainer.appendChild(downloadBtn);
+                } else {
+                    alert('Failed to process the image.');
+                }
+            } catch (error) {
+                alert('An error occurred. Please try again.');
+                console.error(error);
+            } finally {
+                loadingIndicator.classList.add('hidden');
             }
         });
+
 
 
     </script>
