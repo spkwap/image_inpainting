@@ -16,13 +16,13 @@
     color: #333;
 }
 
-.profile-info p, .stats p {
+.profile-info p {
     font-size: 18px;
     margin: 15px 0;
     color: #555;
 }
 
-.profile-info strong, .stats strong {
+.profile-info strong {
     color: #2980b9;
 }
 
@@ -69,6 +69,7 @@ button {
     transition: background-color 0.3s ease, transform 0.2s ease;
     margin-bottom: 15px;
 }
+
 
 button:hover {
     background-color: #1f618d;
