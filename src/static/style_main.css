@@ -142,7 +142,7 @@ button:hover {
     background: #2c3e50;
 }
 
-.profile-info p, .stats p {
+.dark-mode .profile-info p {
     color: #fff;
 }
 

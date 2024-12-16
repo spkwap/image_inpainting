@@ -19,13 +19,15 @@
                     <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
                     <li><a href="{{ url_for('profile') }}">Profile</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                    <li><i id="toggle-dark-mode" class="fas fa-moon"></i></li>
                 {% endif %}
             </ul>
+
         </nav>
+
     </header>
 
     <main>
+        <i id="toggle-dark-mode" class="fas fa-moon"></i>
         {% block content %}{% endblock %}
     </main>
 
