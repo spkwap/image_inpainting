@@ -98,3 +98,79 @@ button:hover {
     background: #1f618d;
     transform: scale(1.05);
 }
+
+
+
+.dark-mode {
+    background: #161617;
+    color: #ecf0f1;
+}
+
+.dark-mode .container {
+    background: #2c3e50;
+}
+.dark-mode .profile-container {
+    background: #222;
+
+}
+
+.dark-mode .profile-container h1 {
+    color: white;
+}
+
+.dark-mode .change-password h2 {
+    color: white;
+}
+.dark-mode .instructions {
+    background: #34495e;
+    color: #ecf0f1;
+}
+
+.dark-mode .upload-section {
+    color: #ecf0f1;
+}
+
+.dark-mode .upload-section h1 {
+    color: #fff;
+}
+
+.dark-mode label {
+    color: #fff;
+}
+
+.dark-mode main {
+    background: #2c3e50;
+}
+
+.profile-info p, .stats p {
+    color: #fff;
+}
+
+.dark-mode button {
+    background: #2980b9;
+}
+
+.dark-mode .download-btn {
+    background: #2980b9;
+}
+
+#toggle-dark-mode {
+    margin: 20px 20px 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    cursor: pointer;
+    color: #34495e;
+    background-color: white;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    width: 50px;
+    height: 50px;
+}
+
+#toggle-dark-mode:hover {
+    background-color: #f2f2f2;
+    color: #2980b9;
+}
