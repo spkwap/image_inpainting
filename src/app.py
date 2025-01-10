@@ -14,7 +14,9 @@ import base64
 from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash
 from io import BytesIO
-
+from scipy.ndimage import rank_filter
+import time
+import cv2
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -225,6 +227,7 @@ def upload_image():
 def inpaint():
     image_file = request.files['image']
     model_name = request.form.get('model')
+    detection_mode = request.form.get('detection_mode')
 
     if not model_name or model_name not in ['places2.pth', 'celeba.pth', 'psv.pth']:
         return jsonify({'error': 'Invalid model selected.'}), 400
@@ -234,22 +237,54 @@ def inpaint():
     image_path = os.path.join(UPLOAD_FOLDER, f'input_image.{image_extension}')
     image_file.save(image_path)
 
+
     try:
         image = Image.open(image_path).convert("RGB")
         original_size = image.size
         image.save(image_path)
     except Exception as e:
         return jsonify({'error': f'Failed to process the uploaded image: {e}'}), 500
+    print(detection_mode)
+    image_np = np.array(image)
+    if detection_mode == 'manual':
+        try:
+            mask = (~np.all(image_np == [255, 255, 255], axis=-1)).astype(np.uint8) * 255
+            mask_image = Image.fromarray(mask, mode='L')
 
-    try:
-        image_np = np.array(image)
-        mask = (~np.all(image_np == [255, 255, 255], axis=-1)).astype(np.uint8) * 255
-        mask_image = Image.fromarray(mask, mode='L')
+        except Exception as e:
+            return jsonify({'error': f'Failed to generate or save the mask: {e}'}), 500
+    elif detection_mode == 'auto':
+        try:
+            print("Starting automatic detection with detect_noise_pixels...")
 
-        mask_path = os.path.join(UPLOAD_FOLDER, f'input_mask.{image_extension}')
-        mask_image.save(mask_path)
-    except Exception as e:
-        return jsonify({'error': f'Failed to generate or save the mask: {e}'}), 500
+            # Wywołanie funkcji detect_noise_pixels
+            start_time = time.time()
+            mask_np = detect_noise_pixels(image_np, threshold=50)  # Użyj funkcji detect_noise_pixels
+
+            # Zapisanie maski do pliku
+            mask_image = Image.fromarray(mask_np, mode='L')
+            mask_debug_path = os.path.join(UPLOAD_FOLDER, 'debug_auto_mask.png')
+            mask_image.save(mask_debug_path)
+            print(f"Automatic mask saved at {mask_debug_path}")
+
+            # Oczekiwanie na zakończenie (sprawdzanie poprawności danych)
+            timeout = 5  # maksymalny czas oczekiwania
+            while mask_np is None or mask_np.sum() == 0:  # Jeśli maska jest pusta, czekamy
+                if time.time() - start_time > timeout:
+                    raise TimeoutError(f"Automatic mask generation took too long (>{timeout} seconds).")
+                time.sleep(0.1)  # małe opóźnienie
+            print("Automatic detection completed successfully.")
+
+        except TimeoutError as e:
+            return jsonify({'error': f'Automatic detection timeout: {e}'}), 500
+        except Exception as e:
+            return jsonify({'error': f'Failed to perform automatic detection: {e}'}), 500
+
+    else:
+        return jsonify({'error': 'Invalid detection mode.'}), 400
+
+    mask_path = os.path.join(UPLOAD_FOLDER, f'input_mask.{image_extension}')
+    mask_image.save(mask_path)
 
     list_file_path = 'places2_example_list'
     try:
@@ -306,6 +341,19 @@ def inpaint():
     return send_file(result_path, mimetype=f'image/{image_extension}')
 
 
+def detect_noise_pixels(image, threshold=20):
+
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    smoothed_image = cv2.medianBlur(gray_image, 5)
+
+    diff = cv2.absdiff(gray_image, smoothed_image)
+
+    _, noise_mask = cv2.threshold(diff, threshold, 255, cv2.THRESH_BINARY)
+
+    noise_mask = cv2.bitwise_not(noise_mask)
+
+    return noise_mask
 
 with app.app_context():
     db.create_all()

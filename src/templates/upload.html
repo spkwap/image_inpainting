@@ -42,8 +42,10 @@
             </div>
             <div class="upload-section">
                 <i id="toggle-dark-mode" class="fas fa-moon"></i>
+
                 <h1>Upload and Edit</h1>
                 <div class="file-input">
+
                     <label for="image">Choose an Image</label>
                     <input type="file" id="image" name="image">
                 </div>
@@ -54,7 +56,12 @@
                     <option value="celeba.pth">Celeba</option>
                     <option value="psv.pth">PSV</option>
                 </select>
-
+                <label>
+                    <input type="radio" name="detection_mode" value="manual" checked> Manual detection
+                </label>
+                <label>
+                    <input type="radio" name="detection_mode" value="auto"> Auto detection
+                </label>
                 <label for="brush-size">Brush Size:</label>
                 <input id="brush-size" type="range" min="5" max="120" value="70">
 
@@ -85,6 +92,7 @@
         const brushSizeInput = document.getElementById('brush-size');
         const resultsContainer = document.querySelector('.results');
         const toggleDarkModeBtn = document.getElementById('toggle-dark-mode');
+
 
         let isDrawing = false;
         let image = new Image();
@@ -179,10 +187,12 @@
         submitBtn.addEventListener('click', async function () {
             const maskData = canvas.toDataURL('image/png');
             const maskBlob = await fetch(maskData).then((res) => res.blob());
+            const detectionMode = document.querySelector('input[name="detection_mode"]:checked').value;
 
             const formData = new FormData();
             formData.append('image', maskBlob, 'mask.png');
             formData.append('model', modelInput.value);
+            formData.append('detection_mode', detectionMode);
 
             const loadingIndicator = document.getElementById('loading');
             loadingIndicator.classList.remove('hidden');
