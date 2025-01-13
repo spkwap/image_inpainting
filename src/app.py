@@ -14,7 +14,6 @@ import base64
 from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash
 from io import BytesIO
-from scipy.ndimage import rank_filter
 import time
 import cv2
 
@@ -257,22 +256,19 @@ def inpaint():
         try:
             print("Starting automatic detection with detect_noise_pixels...")
 
-            # Wywołanie funkcji detect_noise_pixels
             start_time = time.time()
-            mask_np = detect_noise_pixels(image_np, threshold=50)  # Użyj funkcji detect_noise_pixels
+            mask_np = detect_noise_pixels(image_np, threshold=20)
 
-            # Zapisanie maski do pliku
             mask_image = Image.fromarray(mask_np, mode='L')
             mask_debug_path = os.path.join(UPLOAD_FOLDER, 'debug_auto_mask.png')
             mask_image.save(mask_debug_path)
             print(f"Automatic mask saved at {mask_debug_path}")
 
-            # Oczekiwanie na zakończenie (sprawdzanie poprawności danych)
-            timeout = 5  # maksymalny czas oczekiwania
-            while mask_np is None or mask_np.sum() == 0:  # Jeśli maska jest pusta, czekamy
+            timeout = 5
+            while mask_np is None or mask_np.sum() == 0:
                 if time.time() - start_time > timeout:
                     raise TimeoutError(f"Automatic mask generation took too long (>{timeout} seconds).")
-                time.sleep(0.1)  # małe opóźnienie
+                time.sleep(0.1)
             print("Automatic detection completed successfully.")
 
         except TimeoutError as e:
@@ -341,19 +337,24 @@ def inpaint():
     return send_file(result_path, mimetype=f'image/{image_extension}')
 
 
-def detect_noise_pixels(image, threshold=20):
+def detect_noise_pixels(image, threshold=20, adaptive_threshold=True):
 
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    smoothed_image = cv2.medianBlur(gray_image, 5)
+    smoothed_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
 
     diff = cv2.absdiff(gray_image, smoothed_image)
 
-    _, noise_mask = cv2.threshold(diff, threshold, 255, cv2.THRESH_BINARY)
+    if adaptive_threshold:
+        noise_mask = cv2.adaptiveThreshold(diff, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+                                          cv2.THRESH_BINARY, 11, 2)
+    else:
+        _, noise_mask = cv2.threshold(diff, threshold, 255, cv2.THRESH_BINARY)
 
     noise_mask = cv2.bitwise_not(noise_mask)
 
     return noise_mask
+
 
 with app.app_context():
     db.create_all()

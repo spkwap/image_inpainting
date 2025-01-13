@@ -51,22 +51,20 @@
     };
     img.src = imageData;
 
-    // Function to apply adjustments based on slider values
     function applyAdjustments() {
         const brightness = parseInt(document.getElementById('brightnessSlider').value);
         const contrast = parseInt(document.getElementById('contrastSlider').value);
         const saturation = parseInt(document.getElementById('saturationSlider').value);
 
         Caman('#editCanvas', function () {
-            this.revert(false); // Prevent full revert, maintain incremental changes
+            this.revert(false);
             this.brightness(brightness);
-            this.contrast(contrast / 2); // Reduce contrast effect strength
+            this.contrast(contrast / 2);
             this.saturation(saturation);
             this.render();
         });
     }
 
-    // Add event listeners to sliders
     document.getElementById('brightnessSlider').addEventListener('input', applyAdjustments);
     document.getElementById('contrastSlider').addEventListener('input', applyAdjustments);
     document.getElementById('saturationSlider').addEventListener('input', applyAdjustments);
